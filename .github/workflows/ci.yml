@@ -1,0 +1,43 @@
+name: Build and Test Eigen3 Project with CMake Presets
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        compiler: [gcc, clang]
+        build_type: [debug, release]
+
+    steps:
+    # Step 1: Checkout the code
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    # Step 2: Install dependencies (Eigen3, CMake)
+    - name: Install dependencies
+      run: |
+        sudo apt update
+        sudo apt install -y cmake ninja-build libeigen3-dev
+
+    # Step 3: Configure the project using CMake presets
+    - name: Configure project
+      run: |
+        cmake --preset ${{ matrix.build_type }} -DCMAKE_CXX_COMPILER=${{ matrix.compiler }}
+
+    # Step 4: Build the project
+    - name: Build project
+      run: |
+        cmake --build build/${{ matrix.build_type }}
+
+    # Step 5: Run the tests
+    - name: Run tests
+      run: |
+        build/${{ matrix.build_type }}/main
